@@ -1,86 +1,82 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ProductImage } from './product-image.entity';
 
 @Entity()
 export class Product {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @Column('text', {
+    unique: true, // de esta manera se puede definir que el titulo se aunico no pueden haber 2 iguales
+  })
+  title: string;
 
+  @Column('float', {
+    default: 0,
+  })
+  price: number;
 
-    @Column('text', {
-        unique: true  // de esta manera se puede definir que el titulo se aunico no pueden haber 2 iguales
-    })
-    title: string;
+  @Column({
+    type: 'text',
+    nullable: true, // esto quiere decir que puede aceptar nulo
+  })
+  description: string;
 
+  @Column('text', {
+    unique: true,
+  })
+  slug: string;
 
-    @Column('float',{
-        default: 0
-    })
-    price: number
+  @Column('int', {
+    default: 0,
+  })
+  stock: number;
 
+  @Column('text', {
+    array: true,
+  })
+  sizes: string[];
 
-    @Column({
-        type: 'text',
-        nullable: true   // esto quiere decir que puede aceptar nulo
-    })
-    description: string
+  @Column('text')
+  gender: string;
 
+  @Column('text', {
+    array: true,
+    default: [],
+  })
+  tags: string[];
 
-    @Column('text', {
-        unique: true
-    })
-    slug: string;
+  @OneToMany(() => ProductImage, (productImage) => productImage.product, {
+    cascade: true,
+  })
+  images?: ProductImage[];
 
-
-    @Column('int',{
-        default: 0
-    })
-    stock: number
-
-
-    @Column('text',{
-        array: true
-    })
-    sizes: string[]
-
-
-    @Column('text')
-    gender: string
-
-
-    @Column('text', {
-        array: true,
-        default: []
-    })
-    tags: string[]
-
-
-    // images
-
-    @BeforeInsert()
-    checkSlugInsert() {
-
-        if (!this.slug){
-            this.slug = this.title
-        }
-
-        this.slug = this.slug
-            .toLowerCase()
-            .replaceAll(' ','_')
-            .replaceAll("'",'')
+  @BeforeInsert()
+  checkSlugInsert() {
+    if (!this.slug) {
+      this.slug = this.title;
     }
 
-    @BeforeUpdate()
-    checkSlugUpdate() {
+    this.slug = this.slug
+      .toLowerCase()
+      .replaceAll(' ', '_')
+      .replaceAll("'", '');
+  }
 
-        if (this.slug){
-            this.slug = this.slug
-            .toLowerCase()
-            .replaceAll(' ','_')
-            .replaceAll("'",'')
-        }
-
+  @BeforeUpdate()
+  checkSlugUpdate() {
+    if (this.slug) {
+      this.slug = this.slug
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll("'", '');
     }
-
+  }
 }
