@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Controller,
   Get,
   Param,
@@ -13,10 +14,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { fileNamer, fileFilter } from './helpers';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(
+    private readonly filesService: FilesService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Get('product/:imageName')
   findProductImage(
@@ -24,6 +29,7 @@ export class FilesController {
     @Param('imageName')
     imageName: string,
   ) {
+
     const path = this.filesService.getStaticProductImage(imageName);
 
     res.sendFile(path);
@@ -35,7 +41,7 @@ export class FilesController {
       fileFilter: fileFilter,
       //limits: {fileSize: 1000}
       storage: diskStorage({
-        destination: './static/uploads',
+        destination: './static/products',
         filename: fileNamer,
       }),
     }),
@@ -45,8 +51,11 @@ export class FilesController {
     file: Express.Multer.File,
   ) {
     if (!file) {
-      throw new BadGatewayException('Make sure that the file is an image');
+      throw new BadRequestException('Make sure that the file is an image');
     }
-    return file.originalname;
+
+    const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`
+
+    return {secureUrl};
   }
 }
